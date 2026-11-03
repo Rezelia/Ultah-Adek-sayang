@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#3a0716">
+<title>Kartu Ulang Tahun</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500;1,600&display=swap" rel="stylesheet">
+<style>
+:root{--night:#3a0716;--maroon:#6b0f2e;--rose:#ffb8cc;--blush:#ffe4ec;--mist:#f0b9cb;--amber:#ffc46b;--pink:#ff8fab;color-scheme:dark;box-sizing:border-box}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%}
+body{margin:0;position:relative;overflow:hidden;background:radial-gradient(100% 60% at 50% 0,rgba(255,105,155,.55),transparent 72%),radial-gradient(80% 50% at 100% 100%,rgba(255,105,155,.28),transparent 70%),linear-gradient(180deg,var(--maroon),var(--night)) var(--night);color:var(--blush);font:500 1.2rem/1.65 "Cormorant Garamond",Georgia,serif}
+canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+#sky{z-index:0}#fx{z-index:6}
+#garden{position:fixed;left:0;right:0;bottom:0;height:30vh;z-index:1;pointer-events:none}
+#app{position:absolute;inset:0;z-index:2}
+.stage{position:absolute;inset:0;display:flex;padding:max(64px,calc(env(safe-area-inset-top) + 50px)) 20px 22vh;overflow-y:auto;text-align:center;opacity:0;visibility:hidden;transition:opacity .8s,visibility 0s .8s}
+.stage.on{opacity:1;visibility:visible;transition:opacity .8s}
+.in{margin:auto;width:100%;max-width:36rem;display:flex;flex-direction:column;align-items:center}
+.stage .in{transform:scale(.94);transition:transform 1s}
+.stage.on .in{transform:none}
+h1,h2{margin:0 0 .35em;font-style:italic;font-weight:600;line-height:1.1;font-size:clamp(2.3rem,9vw,3.5rem);color:var(--rose);text-shadow:0 0 28px rgba(255,184,204,.35)}
+h2{font-size:clamp(1.9rem,7vw,2.8rem)}
+.sub{margin:0;color:var(--mist);font-style:italic;font-size:1.05rem}
+.btn{margin-top:26px;padding:.65em 1.8em;border-radius:999px;border:1px solid var(--rose);background:rgba(255,184,204,.1);color:var(--rose);font:italic 500 1.1rem "Cormorant Garamond",Georgia,serif;cursor:pointer;transition:background .25s}
+.btn:hover{background:rgba(255,184,204,.22)}
+button:focus-visible,.pol:focus-visible,input:focus-visible{outline:2px solid var(--blush);outline-offset:3px}
+.rv{opacity:0}
+.on .rv{animation:rv .9s calc(.3s + var(--i,0)*.25s) both}
+@keyframes rv{from{opacity:0;transform:translateY(16px)}to{opacity:1}}
+@keyframes bloom{from{transform:scale(0) rotate(-120deg)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes grow{from{transform:scaleY(0)}}
+@keyframes sway{from{transform:rotate(-3deg)}to{transform:rotate(3deg)}}
+svg{display:block}
+.fl svg,.b svg,.gf i svg,.row svg,.bq svg{width:100%;height:100%;animation:spin 26s linear infinite}
+/* taman bunga */
+.gf{position:absolute;bottom:-4px;width:0;height:var(--h);transform-origin:50% 100%;animation:sway 4.5s ease-in-out var(--d) infinite alternate}
+.gf b{position:absolute;left:-1.5px;bottom:0;width:3px;height:100%;border-radius:2px;background:linear-gradient(#6fcf8f,#2d6a4f);transform-origin:bottom;animation:grow 1.6s var(--d) both ease-out}
+.gf b::after{content:"";position:absolute;left:3px;bottom:30%;width:18px;height:9px;border-radius:0 100% 0 100%;background:#4f9d69}
+.gf i{position:absolute;left:calc(var(--z)/-2);top:calc(var(--z)/-2);width:var(--z);height:var(--z);animation:bloom 1.4s calc(1.2s + var(--d)) both cubic-bezier(.3,1.5,.5,1)}
+.fl{position:absolute;width:var(--s);height:var(--s);pointer-events:none}
+.on .fl{animation:bloom 1.2s .6s both cubic-bezier(.3,1.5,.5,1)}
+/* PIN */
+.dots{display:flex;gap:14px;margin:22px 0 6px}
+.dots i{width:15px;height:15px;border-radius:50%;border:1.5px solid var(--rose);transition:.2s}
+.dots i.f{background:var(--rose);box-shadow:0 0 12px var(--rose);transform:scale(1.15)}
+.dots.no{animation:shake .45s}
+.dots.no i{border-color:#ff7a90;background:#ff7a90}
+@keyframes shake{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
+#pm{min-height:1.6em;margin:.4em 0 0;color:var(--mist);font-style:italic}
+.pad{display:grid;grid-template-columns:repeat(3,64px);gap:14px;margin-top:14px}
+.pad button{height:64px;border-radius:50%;border:1px solid rgba(255,184,204,.45);background:rgba(255,184,204,.08);color:var(--blush);font:500 1.5rem system-ui,sans-serif;cursor:pointer;transition:transform .15s,background .2s}
+.pad button:active{transform:scale(.86);background:rgba(255,184,204,.3)}
+/* lilin */
+.cv{margin:0;font:italic 600 1.65rem/1.3 "Cormorant Garamond",Georgia,serif;color:var(--rose);max-width:19rem}
+.lilin{position:relative;width:16px;height:92px;margin:3.5rem 0 1.8rem;border-radius:4px;background:repeating-linear-gradient(135deg,var(--blush) 0 8px,var(--pink) 8px 16px)}
+.api{position:absolute;left:50%;bottom:100%;width:20px;height:34px;margin:0 0 4px -10px;border-radius:50% 50% 50% 50%/65% 65% 35% 35%;background:radial-gradient(circle at 50% 70%,#fff6d6,var(--amber) 55%,#ff8a3d);box-shadow:0 0 40px 18px rgba(255,196,107,.45),0 0 120px 60px rgba(255,160,90,.18);transform-origin:50% 100%;animation:kedip 1.6s ease-in-out infinite alternate;transition:opacity .5s,transform .5s}
+.mati .api{opacity:0;transform:scale(.2);animation:none}
+@keyframes kedip{to{transform:scale(1.06,.94) rotate(2deg)}}
+/* hadiah + buket */
+.gift{position:relative;width:min(58vw,230px);margin:70px 0 18px;padding:0;border:0;background:none;cursor:pointer;filter:drop-shadow(0 0 30px rgba(255,150,190,.45))}
+@media (prefers-reduced-motion:no-preference){.gift{animation:float 3.2s ease-in-out infinite}}
+@keyframes float{50%{transform:translateY(-8px)}}
+.lid{transform-box:fill-box;transform-origin:left bottom;transition:transform .8s cubic-bezier(.3,1.4,.5,1)}
+.open .lid{transform:translateY(-34px) rotate(-14deg)}
+.bq{position:absolute;left:50%;top:42%;width:0;height:0}
+.bq i{position:absolute;bottom:0;left:-1.5px;width:3px;height:var(--h);background:linear-gradient(#6fcf8f,#2d6a4f);transform-origin:bottom;transform:rotate(var(--a)) scaleY(0);transition:transform .9s calc(.3s + var(--d)) cubic-bezier(.3,1.5,.5,1)}
+.bq i b{position:absolute;top:-24px;left:-24px;width:48px;height:48px}
+.open .bq i{transform:rotate(var(--a)) scaleY(1)}
+/* surat, alasan */
+.card{position:relative;width:100%;padding:28px 26px;text-align:left;border:1px solid rgba(255,184,204,.28);border-radius:18px;background:rgba(74,10,31,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.card h2{font-size:clamp(1.7rem,6.5vw,2.3rem)}
+.card p{margin:.8em 0}
+.card .sig{text-align:right;font-style:italic;color:var(--rose)}
+.rs{list-style:none;margin:18px 0 0;padding:0;width:100%;text-align:left}
+.rs li{display:flex;gap:14px;align-items:center;padding:12px 16px;margin-bottom:12px;border:1px solid rgba(255,184,204,.25);border-radius:16px;background:rgba(74,10,31,.6)}
+.b{flex:none;width:34px;height:34px}
+/* foto, video */
+.wall{align-items:start;display:grid;grid-template-columns:repeat(2,1fr);gap:20px 16px;width:100%;max-width:30rem;margin-top:22px;padding:0 6px}
+@media (min-width:640px){.wall{grid-template-columns:repeat(3,1fr);max-width:44rem}}
+.pol{margin:0;padding:8px 8px 10px;background:#fff7f2;color:#4a2a3d;border-radius:3px;box-shadow:0 10px 24px rgba(0,0,0,.5);transform:rotate(var(--r));transition:transform .4s;cursor:pointer}
+.pol .ph{min-height:6.5rem;display:grid;place-items:center;overflow:hidden;font-size:2.2rem;color:#fff;background:linear-gradient(135deg,#ff8fab,#b3204d)}
+.pol img{width:100%;height:auto;display:block}
+.pol figcaption{padding-top:6px;font-style:italic;font-size:1rem;line-height:1.2}
+.pol.pop{transform:rotate(0) scale(1.3);position:relative;z-index:5}
+video{max-width:100%;max-height:62vh;margin-top:20px;border-radius:14px;border:1px solid rgba(255,184,204,.3);background:#000}
+.vid{width:min(100%,26rem);aspect-ratio:16/9;margin-top:20px;display:grid;place-items:center;border-radius:14px;border:1px dashed rgba(255,184,204,.4);color:var(--mist);font-style:italic}
+/* penutup */
+.row{display:flex;gap:8px;margin-bottom:12px}
+.row span{width:clamp(44px,12vw,62px);height:clamp(44px,12vw,62px)}
+.on .row span{animation:bloom 1.2s calc(.5s + var(--d)) both cubic-bezier(.3,1.5,.5,1)}
+.end{max-width:26rem;color:var(--mist);margin:.5em 0 0}
+.sg{margin:1.2em 0 0;font-style:italic;font-size:1.5rem;color:var(--rose)}
+/* QR */
+#qrbox{position:fixed;inset:0;z-index:20;display:none;padding:24px 20px;overflow:auto;text-align:center;background:rgba(58,7,22,.97)}
+#qrbox.on{display:flex}
+input{width:100%;max-width:28rem;margin-top:18px;padding:.7em 1em;border-radius:12px;border:1px solid var(--rose);background:rgba(255,255,255,.06);color:var(--blush);font:1rem system-ui,sans-serif}
+#q{display:none;margin-top:18px;padding:14px;border-radius:12px;background:#fff}
+#q img{display:block}
+/* hiasan ulang tahun */
+#bunting{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:3;display:flex;align-items:flex-start;padding:0 2px;pointer-events:none}
+#bunting::before{content:"";position:absolute;left:0;right:0;top:2px;height:2px;background:rgba(255,228,236,.6)}
+#bunting i{position:relative;flex:1;max-width:46px;aspect-ratio:1/1.1;padding-top:4px;text-align:center;font:700 clamp(9px,3.2vw,15px)/1 system-ui,sans-serif;color:#6b0f2e;background:var(--c);clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:50% 0;animation:swing 2.6s ease-in-out calc(var(--k)*-.3s) infinite alternate}
+@keyframes swing{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
+#deco{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.bl{position:absolute;bottom:var(--b,0);left:var(--x);width:var(--w);height:calc(var(--w)*1.2);margin-left:calc(var(--w)/-2);border-radius:50% 50% 48% 48%/56% 56% 44% 44%;background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.65),transparent 28%),var(--c);box-shadow:inset -6px -8px 14px rgba(0,0,0,.2);pointer-events:none;animation:bob var(--t) ease-in-out var(--d,0s) infinite alternate}
+.bl::before{content:"";position:absolute;left:50%;top:100%;margin:-1px 0 0 -5px;border:5px solid transparent;border-bottom:7px solid var(--c);border-top:0}
+.bl::after{content:"";position:absolute;left:50%;top:calc(100% + 6px);width:1px;height:70px;background:rgba(255,255,255,.5)}
+@keyframes bob{from{transform:translateY(0) rotate(-3deg)}to{transform:translateY(-14px) rotate(3deg)}}
+.bl.up{z-index:5;animation:rise var(--t) ease-in forwards}
+@keyframes rise{to{transform:translateY(-125vh)}}
+.lv{font-size:2.6rem;line-height:1;color:var(--pink);text-shadow:0 0 22px #ff4d7d;animation:beat 1.4s ease-in-out infinite}
+@keyframes beat{0%,30%,100%{transform:scale(1)}15%{transform:scale(1.25)}45%{transform:scale(1.18)}}
+.kue{position:relative;display:flex;flex-direction:column;align-items:center;margin:3.5rem 0 1.4rem}
+.kue .lilin{margin:0}
+.l1,.l2{position:relative;border-radius:14px 14px 8px 8px}
+.l1{--ic:#fff3f6;width:150px;height:46px;background:linear-gradient(#ffb8cc,#ff8fab)}
+.l2{--ic:#ffb8cc;width:214px;height:60px;margin-top:-2px;background:linear-gradient(#a3233f,#6b0f2e);box-shadow:0 16px 30px rgba(0,0,0,.4)}
+.l1::before,.l2::before{content:"";position:absolute;left:0;right:0;top:0;height:14px;border-radius:14px 14px 0 0;background:var(--ic)}
+.l1::after,.l2::after{content:"";position:absolute;left:0;right:0;top:13px;height:10px;background:radial-gradient(circle at 10px 0,var(--ic) 9px,transparent 10px) 0 0/20px 10px repeat-x}
+.l2 span{position:absolute;left:0;right:0;bottom:8px;text-align:center;color:#ffb8cc;letter-spacing:.4em;font-size:1rem}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1}}
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas>
+<div id="deco"></div>
+<div id="garden"></div>
+<main id="app"></main>
+<div id="bunting"></div>
+<canvas id="fx"></canvas>
+<div id="qrbox"><div class="in">
+  <h2>Bikin QR Code</h2>
+  <p class="sub">Tempel link kartu ini, QR langsung muncul.<br>Tekan lama gambarnya untuk menyimpan, atau screenshot.</p>
+  <input id="u" type="url" inputmode="url" placeholder="https://…" aria-label="Link kartu">
+  <div id="q"></div>
+  <button class="btn" id="qx">Tutup</button>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+/* ============ EDIT BAGIAN INI SAJA ============ */
+const CONFIG = {
+  pin: "041104",                              // PIN untuk masuk (angka, panjang bebas)
+  pinJudul: "Kejutan untukmu",
+  pinPetunjuk: "Masukkan PIN untuk membuka",
+  pinSalah: "PIN belum tepat, coba lagi ya",
+  pinBenar: "Yeay, terbuka! ♥",
+  banner: "HAPPY BIRTHDAY",                    // tulisan di bendera hiasan paling atas
+
+  nama: "Nadwa Angelia Putri / ADEK",
+  dari: "Fachreza, mas yang selalu ada untuk adek",   // tanda tangan di surat
+  namaKamu: "Fachreza",                        // tanda tangan di halaman terakhir
+  lilinTeks: "Ada kejutan kecil untukmu. Buat satu permintaan, lalu tiup lilinnya.",
+  lilinTombol: "Tiup lilinnya",
+  pembuka: "Silahkan dibuka ya sayang",
+  petunjuk: "Sentuh hadiahnya untuk membuka",
+  judul: "Selamat ulang tahun",
+  surat: [                                    // satu teks = satu paragraf
+    "Selamat Ulang tahun yang ke .",
+    "Terima kasih sudah jadi tempat pulang, tempat bercerita, dan alasan aku tersenyum tanpa sadar. Semoga umur barumu penuh tawa, sehat selalu, dan semua doa yang kamu simpan diam-diam dikabulkan.",
+    "Aku sayang kamu, hari ini dan seterusnya."
+  ],
+  alasanJudul: "Kenapa aku sayang kamu",
+  alasan: [
+    "Tawamu bikin hari yang berat jadi ringan.",
+    "Kamu peduli sampai ke hal-hal kecil.",
+    "Kamu apa adanya, dan itu cukup buat aku.",
+    "Bareng kamu, hal biasa terasa spesial."
+  ],
+  /* FOTO: taruh file foto di folder yang sama dengan file ini, lalu samakan namanya
+     (foto1.jpg ... foto6.jpg), atau ganti src dengan nama file kamu. Boleh tambah/kurangi baris. */
+  foto: [
+    { src: "foto1.jpg", caption: "Awal kita" },
+    { src: "foto2.jpg", caption: "Hari yang seru" },
+    { src: "foto3.jpg", caption: "Senyummu" },
+    { src: "foto4.jpg", caption: "Liburan kita" },
+    { src: "foto5.jpg", caption: "Favoritku" },
+    { src: "foto6.jpg", caption: "Hari ini" }
+  ],
+  video: { src: "video.mp4", judul: "Sebuah momen untukmu", keterangan: "Pesan video khusus dariku" },   // src "" = tanpa video
+  penutup: { judul: "Selalu & selamanya", teks: "Terima kasih sudah menjadi kamu. Aku di sini, hari ini dan di semua hari setelahnya.", salam: "Dengan sayang," }
+};
+/* ============ SELESAI ============ */
+
+const $ = s => document.querySelector(s), C = CONFIG;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const WARNA = ['#ff8fab', '#ffb3c7', '#ffb8cc', '#ffe4ec', '#e8446d', '#ffc46b'], tilt = [-5, 4, -3, 6, -6, 3, -4, 5, -2];
+
+/* Gambar bunga (SVG): i menentukan bentuk & warna */
+const flor = i => {
+  const n = [5, 8, 6, 10][i % 4], w = n == 5 ? 15 : 9, h = n == 5 ? 22 : 20;
+  return `<svg viewBox="-50 -50 100 100" aria-hidden="true"><g stroke="rgba(255,255,255,.45)" stroke-width="1.5" fill="${WARNA[i % 6]}">${Array.from({ length: n }, (_, k) => `<ellipse cy="-26" rx="${w}" ry="${h}" transform="rotate(${k * 360 / n})"/>`).join('')}</g><circle r="12" fill="#ffc46b"/><circle r="5" fill="#e2813f"/></svg>`;
+};
+$('#garden').innerHTML = Array.from({ length: 15 }, (_, i) => { const r = Math.random;
+  return `<div class="gf" style="left:${2 + i * 6.8 + r() * 3}%;--h:${50 + r() * 120 | 0}px;--z:${44 + r() * 34 | 0}px;--d:${(i * .17).toFixed(2)}s"><b></b><i>${flor(i)}</i></div>`; }).join('');
+const bq = [-38, -19, 0, 19, 38].map((a, i) => `<i style="--a:${a}deg;--h:${[80, 100, 120, 100, 80][i]}px;--d:${i * .08}s"><b>${flor(i + 1)}</b></i>`).join('');
+
+/* Hiasan: bendera, balon, hati */
+const BC = ['#ff8fab', '#8c1d40', '#ffd1dc', '#e8446d', '#ffc46b', '#ffb8cc'], HC = ['#ff8fab', '#ff4d7d', '#ff6b9a', '#ffb8cc'];
+$('#bunting').innerHTML = [...C.banner].map((c, k) => c === ' ' ? '<i style="visibility:hidden"></i>' : `<i style="--c:${['#ff8fab', '#ffd1dc', '#ffc46b', '#fff'][k % 4]};--k:${k}">${esc(c)}</i>`).join('');
+const bl = (css, up) => { const e = document.createElement('i'); e.className = 'bl' + (up ? ' up' : ''); e.style.cssText = css; (up ? document.body : $('#deco')).append(e); return e; };
+[[3, 44, 0], [10, 20, 2], [95, 52, 1], [88, 24, 3], [97, 74, 4], [5, 72, 5]].forEach(([x, b, k], i) => bl(`--x:${x}%;--b:${b}%;--c:${BC[k]};--w:${38 + i % 3 * 7}px;--t:${4 + i * .7}s;--d:-${i}s`));
+function balon(n = 8) {
+  if (still) return;
+  for (let i = 0; i < n; i++) { const e = bl(`--x:${5 + Math.random() * 90}%;--b:-90px;--c:${BC[i % 6]};--w:${36 + Math.random() * 26 | 0}px;--t:${6 + Math.random() * 4}s;animation-delay:${i * .25}s`, 1); e.onanimationend = () => e.remove(); }
+}
+
+$('#app').innerHTML = `
+<section class="stage on"><div class="in">
+  <div class="lv">♥</div>
+  <h1 class="rv">${esc(C.pinJudul)}</h1>
+  <p class="sub rv" style="--i:1">${esc(C.pinPetunjuk)}</p>
+  <div class="dots" id="dots">${'<i></i>'.repeat(C.pin.length)}</div>
+  <p id="pm"></p>
+  <div class="pad" id="pad">${[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '⌫'].map(k => k === '' ? '<span></span>' : `<button data-k="${k}" aria-label="${k === '⌫' ? 'Hapus' : k}">${k}</button>`).join('')}</div>
+</div></section>
+
+<section class="stage" id="s1"><div class="in">
+  <p class="cv rv">${esc(C.lilinTeks)}</p>
+  <div class="kue"><div class="lilin"><i class="api"></i></div><div class="l1"></div><div class="l2"><span>♥ ♥ ♥ ♥ ♥</span></div></div>
+  <button class="btn" id="tiup">${esc(C.lilinTombol)}</button>
+</div></section>
+
+<section class="stage"><div class="in">
+  <button class="gift" id="gift" aria-label="Buka hadiah"><span class="bq">${bq}</span>
+    <svg viewBox="0 0 200 200" width="100%" aria-hidden="true">
+      <defs><linearGradient id="gd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe4ec"/><stop offset="1" stop-color="#c98a9f"/></linearGradient></defs>
+      <rect x="38" y="98" width="124" height="86" rx="6" fill="url(#gd)"/>
+      <rect x="92" y="98" width="16" height="86" fill="#8c1d40" opacity=".85"/>
+      <g class="lid">
+        <rect x="30" y="72" width="140" height="30" rx="6" fill="url(#gd)"/>
+        <rect x="92" y="72" width="16" height="30" fill="#8c1d40" opacity=".85"/>
+        <path d="M100 72C80 38 50 50 66 68c8 8 26 4 34 4zM100 72c20-34 50-22 34-4-8 8-26 4-34 4z" fill="#ffb8cc" stroke="#8c1d40" stroke-width="3"/>
+      </g>
+    </svg>
+  </button>
+  <h1 class="rv">${esc(C.pembuka)}</h1>
+  <p class="sub rv" style="--i:1">${esc(C.petunjuk)}</p>
+</div></section>
+
+<section class="stage"><div class="in">
+  <article class="card rv">
+    <i class="fl" data-f="1" style="--s:78px;top:-30px;right:-20px"></i><i class="fl" data-f="2" style="--s:58px;bottom:-22px;left:-14px"></i>
+    <h2>${esc(C.judul)}, ${esc(C.nama)}</h2>
+    ${C.surat.map((p, i) => `<p class="rv" style="--i:${i + 1}">${esc(p)}</p>`).join('')}
+    <p class="sig rv" style="--i:${C.surat.length + 1}">${esc(C.dari)}</p>
+  </article>
+  <button class="btn next">Ada lagi untukmu</button>
+</div></section>
+
+<section class="stage"><div class="in">
+  <h2 class="rv">${esc(C.alasanJudul)}</h2>
+  <ul class="rs">${C.alasan.map((t, i) => `<li class="rv" style="--i:${i + 1}"><span class="b">${flor(i)}</span>${esc(t)}</li>`).join('')}</ul>
+  <button class="btn next">Lihat kenangan kita</button>
+</div></section>
+
+<section class="stage"><div class="in">
+  <h2 class="rv">Kenangan kita</h2>
+  <p class="sub rv" style="--i:1">Sentuh foto untuk memperbesar</p>
+  <div class="wall">${C.foto.map((f, i) => `
+    <figure class="pol rv" tabindex="0" role="button" style="--r:${tilt[i % tilt.length]}deg;--i:${i + 2}">
+      <div class="ph">${f.src ? `<img src="${esc(f.src)}" alt="${esc(f.caption)}" onerror="this.replaceWith('♥')">` : '♥'}</div>
+      <figcaption>${esc(f.caption)}</figcaption>
+    </figure>`).join('')}</div>
+  <button class="btn next">Lanjut</button>
+</div></section>
+
+<section class="stage"><div class="in">
+  <h2 class="rv">${esc(C.video.judul)}</h2>
+  <p class="sub rv" style="--i:1">${esc(C.video.keterangan)}</p>
+  ${C.video.src ? `<video src="${esc(C.video.src)}" controls playsinline preload="metadata"></video>` : `<div class="vid">Video belum ditambahkan</div>`}
+  <button class="btn next">Lanjut</button>
+</div></section>
+
+<section class="stage"><div class="in">
+  <div class="lv">♥</div>
+  <div class="row">${[0, 1, 2, 3, 4].map(i => `<span style="--d:${i * .15}s">${flor(i + 2)}</span>`).join('')}</div>
+  <h1 class="rv">${esc(C.penutup.judul)}</h1>
+  <p class="end rv" style="--i:1">${esc(C.penutup.teks)}</p>
+  <p class="sg rv" style="--i:2">${esc(C.penutup.salam)}<br>${esc(C.namaKamu)}</p>
+  <button class="btn" id="hujan">Hujan bunga lagi</button>
+  <button class="btn" id="again">Putar ulang</button>
+</div></section>`;
+document.querySelectorAll('.fl').forEach(e => e.innerHTML = flor(+e.dataset.f));
+
+/* Navigasi antar layar */
+const st = [...document.querySelectorAll('.stage')];
+let cur = 0, buf = '', locked = 0;
+function go(n) {
+  cur = n;
+  st.forEach((s, i) => s.classList.toggle('on', i === n));
+  st[n].scrollTop = 0;
+  if (n === 7) { burst(120); balon(10); }
+  const v = $('video'); if (v && n !== 6) v.pause();
+}
+document.querySelectorAll('.next').forEach(b => b.onclick = () => go(cur + 1));
+$('#hujan').onclick = () => { burst(140); balon(8); };
+$('#again').onclick = () => { $('#s1').classList.remove('mati'); $('#tiup').disabled = false; $('#gift').classList.remove('open'); go(1); };
+$('#tiup').onclick = e => { e.currentTarget.disabled = true; $('#s1').classList.add('mati'); burst(110); balon(6); setTimeout(() => go(2), 1500); };
+$('#gift').onclick = e => {
+  const g = e.currentTarget;
+  if (g.classList.contains('open')) return;
+  g.classList.add('open'); burst(); balon(8); setTimeout(() => go(3), 2600);
+};
+document.querySelectorAll('.pol').forEach(p => {
+  p.onclick = () => {
+    const was = p.classList.contains('pop');
+    document.querySelectorAll('.pol.pop').forEach(x => x.classList.remove('pop'));
+    if (!was) p.classList.add('pop');
+  };
+  p.onkeydown = e => { if (e.key === 'Enter') p.click(); };
+});
+
+/* PIN */
+function key(k) {
+  if (locked) return;
+  buf = k === '⌫' ? buf.slice(0, -1) : (buf + k).slice(0, C.pin.length);
+  const D = $('#dots'); [...D.children].forEach((d, i) => d.classList.toggle('f', i < buf.length));
+  if (buf.length < C.pin.length) return;
+  locked = 1;
+  if (buf === C.pin) { $('#pm').textContent = C.pinBenar; burst(); balon(6); setTimeout(() => go(1), 1100); }
+  else {
+    D.classList.add('no'); $('#pm').textContent = C.pinSalah;
+    setTimeout(() => { D.classList.remove('no'); buf = ''; [...D.children].forEach(d => d.classList.remove('f')); $('#pm').textContent = ''; locked = 0; }, 800);
+  }
+}
+$('#pad').onclick = e => { const b = e.target.closest('button'); if (b) key(b.dataset.k); };
+addEventListener('keydown', e => { if (cur) return; if (/^\d$/.test(e.key)) key(e.key); else if (e.key === 'Backspace') key('⌫'); });
+
+/* Langit berbintang + kelopak bunga & hati */
+const sk = $('#sky'), sx = sk.getContext('2d'), fc = $('#fx'), fx = fc.getContext('2d');
+const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let W, H, stars = [], ps = [];
+function size() {
+  const d = devicePixelRatio || 1; W = innerWidth; H = innerHeight;
+  for (const c of [sk, fc]) { c.width = W * d; c.height = H * d; c.getContext('2d').setTransform(d, 0, 0, d, 0, 0); }
+  stars = Array.from({ length: Math.round(W * H / 4500) }, () => ({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.2 + .25, p: Math.random() * 6.3 }));
+  if (still) tick(0);
+}
+function add(o) {
+  ps.push({ x: W / 2, y: H * .4, vx: 0, vy: 0, g: 0, a: 1, f: 0, h: 0, r: Math.random() * 6, vr: (Math.random() - .5) * .15, z: 5 + Math.random() * 7, c: WARNA[Math.random() * 6 | 0], ...o });
+}
+function burst(n = 90) {
+  if (still) return;
+  for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, v = 2 + Math.random() * 5;
+    add({ vx: Math.cos(a) * v, vy: Math.sin(a) * v - 3, g: .07, f: .007, ...(i % 3 ? {} : { h: 1, c: HC[i % 4] }), z: 5 + Math.random() * (i % 3 ? 7 : 9) }); }
+}
+function tick(t) {
+  sx.clearRect(0, 0, W, H); sx.fillStyle = '#ffe9ef';
+  for (const s of stars) { sx.globalAlpha = still ? .6 : .3 + .7 * Math.abs(Math.sin(s.p + t / 1400)); sx.beginPath(); sx.arc(s.x, s.y, s.r, 0, 6.283); sx.fill(); }
+  fx.clearRect(0, 0, W, H);
+  if (!still && ps.length < 60 && Math.random() < .03) add({ x: Math.random() * W, y: H + 20, vx: (Math.random() - .5) * .5, vy: -(1 + Math.random() * 1.3), vr: .012, h: 1, c: HC[Math.random() * 4 | 0], z: 5 + Math.random() * 7 });
+  if (!still && ps.length < 60 && Math.random() < .05) add({ x: Math.random() * W, y: -12, vx: Math.random() - .5, vy: .7 + Math.random(), z: 5 + Math.random() * 5 });
+  for (const p of ps) {
+    p.x += p.vx + (p.g ? 0 : Math.sin(p.r) * .6); p.y += p.vy; p.vy += p.g; p.a -= p.f; p.r += p.vr;
+    fx.globalAlpha = Math.max(p.a, 0); fx.fillStyle = p.c; fx.save(); fx.translate(p.x, p.y); fx.rotate(p.h ? Math.sin(p.r) * .5 : p.r);
+    if (p.h) { fx.font = p.z * 2 + 'px serif'; fx.fillText('♥', 0, 0); } else { fx.beginPath(); fx.ellipse(0, 0, p.z, p.z / 2, 0, 0, 6.283); fx.fill(); }
+    fx.restore();
+  }
+  ps = ps.filter(p => p.a > 0 && p.y < H + 30 && p.y > -60);
+  if (!still) requestAnimationFrame(tick);
+}
+addEventListener('resize', size);
+size();
+if (!still) requestAnimationFrame(tick);
+
+/* Pembuat QR: buka link kartu dengan tambahan #qr di belakangnya */
+function qr() {
+  const u = $('#u').value.trim(), b = $('#q');
+  b.innerHTML = ''; b.style.display = u ? 'inline-block' : 'none';
+  if (!u) return;
+  try { new QRCode(b, { text: u, width: 240, height: 240, colorDark: '#5a0f2a', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M }); }
+  catch (e) { b.textContent = 'QR belum bisa dibuat, coba muat ulang halaman.'; }
+}
+$('#u').oninput = qr;
+$('#qx').onclick = () => $('#qrbox').classList.remove('on');
+const chk = () => $('#qrbox').classList.toggle('on', location.hash === '#qr');
+addEventListener('hashchange', chk); chk();
+</script>
+</body>
+</html>
